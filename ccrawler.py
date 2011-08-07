@@ -29,13 +29,16 @@ class CCrawler:
         self.start_urls = GetAttr(self.spider, 'start_urls', [])
         self.creq = queue.Queue()
         self.cres = queue.Queue()
-        self.pool = eventlet.GreenPool()
-        self.task = [self.pool.spawn_n(self.fetcher) for i in range(self.workers)]
+        #self.pool = eventlet.GreenPool()
+        #self.task = [self.pool.spawn_n(self.fetcher) for i in range(self.workers)]
         self.task_count = 0
         self.dispatcher()
 
     def start(self):
-        self.pool.waitall()
+        #self.pool.waitall()
+        while not self.creq.empty():
+            t = eventlet.spawn(self.fetcher)
+            t.wait()
         '''
         for i in range(self.workers):
             t = eventlet.spawn(self.fetcher)
@@ -60,6 +63,7 @@ class CCrawler:
                     self.cres.put(result)
             except eventlet.Timeout:
                 print 'TimeOut: %s' % url
+                return url, result
             except:
                 print 'URLError: %s' % url
             else:
