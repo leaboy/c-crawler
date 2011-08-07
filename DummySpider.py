@@ -6,10 +6,10 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-urls=['http://www.163.com', 'http://www.qq.com', 'http://www.sina.com.cn', 'http://www.sohu.com', 'http://www.yahoo.com', 'http://www.baidu.com', 'http://www.google.com', 'http://www.microsoft.com']
-
 class DummySpider:
-    workers = 3
+    start_urls = ['http://www.163.com', 'http://www.qq.com', 'http://www.sina.com.cn', 'http://www.sohu.com', 'http://www.yahoo.com', 'http://www.baidu.com', 'http://www.google.com', 'http://www.microsoft.com']
+    workers = 100
+    timeout = 20
 
     def parse(self, result):
         pass
@@ -27,8 +27,8 @@ spider = DummySpider()
 crawler = CCrawler(spider)
 crawler.start()
 
-print '>>>>>>>'
-
+'''
 spider2 = a()
 crawler2 = CCrawler('')
 crawler2.start()
+'''
