@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+Example of Usage
+'''
 
 import common
 from ccrawler import CCrawler
@@ -11,8 +14,6 @@ class DummySpider:
     workers = 100
     timeout = 20
 
-    def parse(self, response):
-        print response.url
 
     def pipeline(self, results):
         for r in results:

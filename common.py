@@ -1,3 +1,13 @@
+#!/usr/bin/python
+#-*-coding:utf-8-*-
+
+# Common functions or class.
+#
+# $Author$
+# $Id$
+#
+# GNU Free Documentation License 1.3
+
 import warnings
 
 def deprecated_setter(setter, attrname):

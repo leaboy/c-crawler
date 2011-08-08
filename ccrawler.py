@@ -79,11 +79,15 @@ class CCrawler:
         rslist = []
         while not self.cres.empty():
             rslist.append(self.cres.get())
-        parse = GetAttr(self.spider, 'parse', object)
+        parse = GetAttr(self.spider, 'parse', self.parse)
         pool = eventlet.GreenPool(self.workers)
         for rs in rslist:
             pool.spawn_n(parse, rs)
         pool.waitall()
+
+    def parse(self, response):
+        '''when spider's parse is empty, then use this replace with do nothing'''
+        pass
 
 
 def GetAttr(object, name=None, default=None):
