@@ -12,15 +12,14 @@
 
 from __future__ import with_statement
 
+import common
 import eventlet
 from eventlet import queue
 from eventlet.green import urllib2
 from response import Response
 
-import traceback
-import logging
-
-logger = logging.getLogger(__name__)
+import logging, traceback
+logger = common.logger(name=__name__, filename='ccrawler.log', level=logging.DEBUG)
 
 class CCrawler:
     def __init__(self, spider):
@@ -40,26 +39,28 @@ class CCrawler:
             for url in self.start_urls:
                 self.creq.put(url)
         except Exception:
-            logger.error("dispatcher Error!\n%s" % traceback.format_exc())
-        finally:
-            logger.info("Task Count: %s" % self.creq.qsize())
+            logger.error("dispatcher Error!\n%s\n" % traceback.format_exc())
 
     def fetcher(self):
         url, body, status, headers, response = self.creq.get(), None, 200, None, None
+        request = urllib2.Request(url)
         with eventlet.Timeout(self.timeout, False):
             try:
-                request = urllib2.Request(url)
                 response = urllib2.urlopen(request)
-            except eventlet.Timeout:
-                logger.error('TimeOut: %s' % url)
+            except eventlet.Timeout, e:
+                logger.error('URLError: %s(%s)' % (url, e))
             except urllib2.HTTPError, e:
                 status = e.code
-                logger.error('URLError: %s(%s)' % (url, status))
+            except urllib2.URLError, e:
+                logger.error('URLError: %s%s' % (url, e.args[0]))
+            except:
+                logger.error('URLError: Could not resolve url "%s"' % url)
+            else:
+                 body = response.read()
             finally:
-                body = response.read()
                 response = Response(url, status, headers, body, request)
                 self.cres.put(response)
-                logger.info('fetching: %s' % url)
+                logger.info('Fetching: %s' % url)
                 self.task_count += 1
 
     def pipeliner(self):
@@ -68,13 +69,13 @@ class CCrawler:
     def start(self):
         logger.info("CCrawler start...")
         self.pool.waitall()
-        self.resmap()
-        logger.info("CCrawler closed.")
+        self.rsmap()
+        logger.info("CCrawler closed.\n")
 
     def stop(self):
         pass
 
-    def resmap(self):
+    def rsmap(self):
         rslist = []
         while not self.cres.empty():
             rslist.append(self.cres.get())

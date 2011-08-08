@@ -6,8 +6,6 @@
 # $Author$
 # $Id$
 #
-# Lib: eventlet, lxml
-#
 # GNU Free Documentation License 1.3
 
 from common import deprecated_setter
