@@ -27,17 +27,21 @@ class CCrawler:
         self.workers = GetAttr(self.spider, 'workers', 10)
         self.timeout = GetAttr(self.spider, 'timeout', 120)
         self.start_urls = GetAttr(self.spider, 'start_urls', [])
+
         self.creq = queue.Queue()
         self.cres = queue.Queue()
+
         self.pool = eventlet.GreenPool(self.workers)
-        self.task = [self.pool.spawn_n(self.fetch_coroutine) for i in range(self.workers)]
+        self.pool.spawn_n(self.dispatcher)
+        self.pool.spawn_n(self.fetch_coroutine)
         self.task_done = 0
-        self.dispatcher()
 
     def dispatcher(self):
         try:
             for url in self.start_urls:
                 self.creq.put(url)
+            for i in range(self.workers):
+                self.pool.spawn_n(self.fetch_coroutine)
         except Exception:
             logger.error("dispatcher Error!\n%s\n" % traceback.format_exc())
 
@@ -46,58 +50,52 @@ class CCrawler:
             self.fetcher()
 
     def fetcher(self):
-        url, body, status, headers, response, = self.creq.get(), None, 200, None, None
+        url, body, status, headers, response = self.creq.get(), None, 200, None, None
+        errormsg = '200'
         request = urllib2.Request(url)
         t = eventlet.Timeout(self.timeout, False)
         try:
             response = urllib2.urlopen(request)
             body = response.read()
         except urllib2.HTTPError, e:
-            status = e.code
+            status = errormsg = e.code
         except urllib2.URLError, e:
-            logger.error('URLError: %s%s' % (url, e.args[0]))
+            errormsg = 'URLError: %s.' % e.args[0]
         except eventlet.Timeout, e:
-            logger.error('TimeOut: %s(%s)' % (url, e))
+            errormsg = 'Time out.'
         except:
-            logger.error('URLError: Could not resolve url "%s"' % url)
+            errormsg = 'URLError: Could not resolve.'
         finally:
             t.cancel()
             response = Response(url, status, headers, body, request)
             self.cres.put(response)
-            logger.info('Fetched: %s' % url)
+            logger.info('Fetched: %s (%s)' % (url, errormsg))
             self.task_done += 1
-
-    def pipeliner(self):
-        pass
 
     def start(self):
         logger.info("CCrawler start...")
-
         self.pool.waitall()
-
-        '''
-        pool = eventlet.GreenPool(self.workers)
-        for i in range(self.workers):
-            pool.spawn_n(self.parsepool)
-        pool.waitall()
-        '''
-
+        self.parse_coroutine()
         logger.info("CCrawler closed.\n")
 
     def stop(self):
-        pass
+        print self.pool.waiting(), self.pool.running()
 
-    def parsepool(self):
-        parse = GetAttr(self.spider, 'parse', self.parse)
-        while not self.cres.empty():
-            rslist.append(self.cres.get())
+    def pipeliner(self, item):
+        print item
+
+    def parse_coroutine(self):
+        parse = GetAttr(self.spider, 'parse', self._parse)
         pool = eventlet.GreenPool()
-        for rs in rslist:
-            pool.spawn_n(parse, rs)
+        while not self.cres.empty():
+            response = self.cres.get()
+            item = pool.spawn(parse, response).wait()
+            self.pipeliner(item)
+        pool.waitall()
 
-    def parse(self, response):
+    def _parse(self, response):
         '''when spider's parse is empty, then use this replace with do nothing'''
-        pass
+        return None
 
 
 def GetAttr(object, name=None, default=None):
