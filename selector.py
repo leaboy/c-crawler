@@ -25,6 +25,8 @@ class HtmlSelector:
             self.html = encoding(html)
         elif text:
             self.html = encoding(text)
+        else:
+            self.html = encoding('None')
         self._root = root
         self._xpathev = None
         self.namespaces = namespaces
