@@ -5,22 +5,26 @@ Example of Usage
 
 import common
 from ccrawler import CCrawler
+from selector import HtmlSelector
 
 import logging
 logger = common.logger(name=__name__, filename='ccrawler.log', level=logging.DEBUG)
 
 class DummySpider:
-    start_urls = ['http://www.qq.com', 'http://a.nocn.net', 'http://www.sina.com', 'http://www.google.hk', 'http://www.baidu.com', 'http://www.google.com']
+    start_urls = ['http://disclosure.szse.cn/m/drgg000023.htm', 'http://disclosure.szse.cn/m/drgg000024.htm']
     workers = 100
     timeout = 8
 
     def parse(self, response):
-        url = response.url;
-        title = response.body;
-        return url
+        hxs = HtmlSelector(response.body)
+        itemlist = hxs.select('//td[@class="td10"]')
+        for item in itemlist:
+            title = item.select('a/text()')
+            #link = item.select('a/@href')
+            #print item
 
     def process_item(self, item):
-        print item
+        pass
 
 class a:
     pass
