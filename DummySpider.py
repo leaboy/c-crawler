@@ -12,19 +12,24 @@ logger = common.logger(name=__name__, filename='ccrawler.log', level=logging.DEB
 
 class DummySpider:
     start_urls = ['http://disclosure.szse.cn/m/drgg000023.htm', 'http://disclosure.szse.cn/m/drgg000024.htm']
+    #start_urls = ['http://www.baidu.com', 'http://www.google.com', 'http://www.google.hk']
     workers = 100
     timeout = 8
 
     def parse(self, response):
         hxs = HtmlSelector(response.body)
         itemlist = hxs.select('//td[@class="td10"]')
+        #print len(response.body)
+
         for item in itemlist:
-            title = item.select('a/text()')
-            #link = item.select('a/@href')
-            #print item
+            #print item._root.xpath('a/text()')
+            title = item.select('a/text()').extract()[0]
+            link = item.select('a/@href').extract()[0]
+            yield (title, link)
 
     def process_item(self, item):
-        pass
+        for i in item:
+            print i
 
 class a:
     pass
@@ -33,11 +38,4 @@ class a:
 spider = DummySpider()
 crawler = CCrawler(spider)
 crawler.start()
-crawler.stop()
-
-'''
-spider2 = a()
-crawler2 = CCrawler('')
-crawler2.start()
-'''
 

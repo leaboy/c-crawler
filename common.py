@@ -66,12 +66,16 @@ def encoding(text):
 
     import chardet
 
-    if isinstance(text, unicode):
-        return text
+    try:
+        if isinstance(text, unicode):
+            return text
 
-    elif isinstance(text, basestring):
-        charencode = chardet.detect(text)['encoding']
-        return text.decode(charencode)
+        elif isinstance(text, basestring):
+            char = chardet.detect(text)
+            char['text'] = text.decode(char['encoding'])
+            return char
+    except:
+        return
 
 def extract_regex(regex, text):
     """Extract a list of unicode strings from the given text/encoding using the following policies:
@@ -93,7 +97,7 @@ def extract_regex(regex, text):
     if isinstance(text, unicode):
         return [s for s in strings]
     else:
-        return [encoding(s) for s in strings]
+        return [encoding(s)['text'] for s in strings]
 
 def flatten(x):
     """flatten(sequence) -> list

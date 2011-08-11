@@ -41,10 +41,8 @@ class CCrawler:
                 self.creq.put(url)
             for i in range(self.workers):
                 self.pool.spawn_n(self.fetch_coroutine)
-                self.pool.spawn_n(self.parse_coroutine)
         except Exception:
             logger.error("dispatcher Error!")
-            self.stop()
 
     def fetch_coroutine(self):
         while not self.creq.empty():
@@ -70,6 +68,7 @@ class CCrawler:
             t.cancel()
             response = Response(url, status, headers, body, request)
             self.cres.put(response)
+            self.pool.spawn_n(self.parse_coroutine)
             logger.info('Fetched: %s (%s)' % (url, errormsg))
             self.task_done += 1
 
@@ -85,7 +84,8 @@ class CCrawler:
     def parse_coroutine(self):
         while self.creq.empty() and not self.cres.empty():
             response = self.cres.get()
-            self._pipeliner(self._parse(response))
+            item = self._parse(response)
+            self._pipeliner(item)
 
     def _parse(self, response):
         '''when spider's parse is empty, then use this replace with do nothing'''

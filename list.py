@@ -1,6 +1,6 @@
 from common import flatten, deprecated
 
-class SelectorList(list):
+class HtmlSelectorList(list):
 
     def __getslice__(self, i, j):
         return self.__class__(list.__getslice__(self, i, j))
