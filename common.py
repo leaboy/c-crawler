@@ -67,6 +67,9 @@ def encoding(text):
     import chardet
 
     try:
+        if text is None:
+            text = ' '
+
         if isinstance(text, unicode):
             return text
 

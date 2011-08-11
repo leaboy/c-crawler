@@ -21,10 +21,10 @@ class HtmlSelector:
     _tostring_method = 'html'
 
     def __init__(self, html=None, text=None, root=None, expr=None, namespaces=None):
-        if text:
-            self.html = {'text': text, 'encoding': 'utf-8'}
-        else:
+        if html:
             self.html = encoding(html)
+        elif text:
+            self.html = encoding(text)
         self._root = root
         self._xpathev = None
         self.namespaces = namespaces
