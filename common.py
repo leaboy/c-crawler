@@ -44,3 +44,6 @@ def logger(**kwargs):
     logging.basicConfig(**options)
 
     return logger
+
+def encoding_to_utf8():
+    import chardet

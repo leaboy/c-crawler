@@ -33,7 +33,6 @@ class CCrawler:
 
         self.pool = eventlet.GreenPool(self.workers)
         self.pool.spawn_n(self.dispatcher)
-        self.pool.spawn_n(self.fetch_coroutine)
         self.task_done = 0
 
     def dispatcher(self):
@@ -42,8 +41,10 @@ class CCrawler:
                 self.creq.put(url)
             for i in range(self.workers):
                 self.pool.spawn_n(self.fetch_coroutine)
+                self.pool.spawn_n(self.parse_coroutine)
         except Exception:
-            logger.error("dispatcher Error!\n%s\n" % traceback.format_exc())
+            logger.error("dispatcher Error!")
+            self.stop()
 
     def fetch_coroutine(self):
         while not self.creq.empty():
@@ -75,27 +76,29 @@ class CCrawler:
     def start(self):
         logger.info("CCrawler start...")
         self.pool.waitall()
-        self.parse_coroutine()
         logger.info("CCrawler closed.\n")
 
     def stop(self):
-        print self.pool.waiting(), self.pool.running()
-
-    def pipeliner(self, item):
-        print item
+        self.creq.resize(0)
+        logger.info("stopping crawl...\n")
 
     def parse_coroutine(self):
-        parse = GetAttr(self.spider, 'parse', self._parse)
-        pool = eventlet.GreenPool()
-        while not self.cres.empty():
+        while self.creq.empty() and not self.cres.empty():
             response = self.cres.get()
-            item = pool.spawn(parse, response).wait()
-            self.pipeliner(item)
-        pool.waitall()
+            self._pipeliner(self._parse(response))
 
     def _parse(self, response):
         '''when spider's parse is empty, then use this replace with do nothing'''
-        return None
+        parse = GetAttr(self.spider, 'parse', None)
+        if parse:
+            return parse(response)
+
+    def _pipeliner(self, item):
+        '''when spider's process_item is empty, then use this replace with do nothing'''
+        process_item = GetAttr(self.spider, 'process_item', None)
+        if process_item:
+            process_item(item)
+
 
 
 def GetAttr(object, name=None, default=None):
