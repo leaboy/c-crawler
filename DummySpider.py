@@ -11,7 +11,7 @@ import logging
 logger = common.logger(name=__name__, filename='ccrawler.log', level=logging.DEBUG)
 
 class DummySpider:
-    start_urls = ['http://disclosure.szse.cn/m/drgg000023.htm', 'http://disclosure.szse.cn/m/drgg000024.htm']
+    start_urls = ['http://disclosure.szse.cn/m/drgg000776.htm']
     #start_urls = ['http://www.baidu.com', 'http://www.google.com', 'http://www.google.hk']
     workers = 100
     timeout = 8
@@ -23,8 +23,8 @@ class DummySpider:
         '''
         itemlist = hxs.re('<td class=\'td10\'>¡¤.*?<\/td>')
         for item in itemlist:
-            title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
-            print title
+            title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')[0]
+            #print title.encode('gbk', 'backslashreplace')
 
         '''
         Usage xpath

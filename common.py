@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#-*-coding:utf-8-*-
 
 # Common functions or class.
 #
@@ -8,7 +6,7 @@
 #
 # GNU Free Documentation License 1.3
 
-import re, warnings
+import sys, re, warnings
 from functools import wraps
 
 def deprecated(use_instead=None):
@@ -68,10 +66,10 @@ def encoding(text):
 
     try:
         if text is None:
-            return {'text': 'None', 'confidence': 1.0, 'encoding': 'ascii'}
+            return {'text': 'None', 'confidence': 1.0, 'encoding': sys.getdefaultencoding()}
 
         if isinstance(text, unicode):
-            return {'text': text, 'confidence': 1.0, 'encoding': 'ascii'}
+            return {'text': text, 'confidence': 1.0, 'encoding': sys.getdefaultencoding()}
 
         elif isinstance(text, basestring):
             char = chardet.detect(text)
@@ -100,6 +98,8 @@ def extract_regex(regex, text):
     if isinstance(text, unicode):
         return [s for s in strings]
     else:
+        for s in strings:
+            print s
         return [encoding(s)['text'] for s in strings]
 
 def flatten(x):

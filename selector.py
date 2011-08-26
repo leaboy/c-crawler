@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#-*-coding:utf-8-*-
 
 # selector (xpath and regex).
 #
@@ -17,13 +15,16 @@ class HtmlSelector:
     _parser = etree.HTMLParser
     _tostring_method = 'html'
 
-    def __init__(self, html=None, text=None, root=None, expr=None, namespaces=None):
+    def __init__(self, html=None, text=None, root=None, expr=None, namespaces=None, encoding=None):
         if html:
+            print encoding(html)
             self.html = encoding(html)
         elif text:
             self.html = encoding(text)
         else:
             self.html = encoding('None')
+        if not encoding:
+            self.encoding = self.html['encoding']
         self._root = root
         self._xpathev = None
         self.namespaces = namespaces
@@ -32,7 +33,7 @@ class HtmlSelector:
     @property
     def root(self):
         if self._root is None:
-            parser = self._parser(encoding=self.html['encoding'], recover=True)
+            parser = self._parser(encoding=self.encoding, recover=True)
             self._root = etree.fromstring(self.html['text'], parser=parser)
         return self._root
 
@@ -49,17 +50,16 @@ class HtmlSelector:
             raise ValueError("Invalid XPath: %s" % xpath)
 
         if hasattr(result, '__iter__'):
-            result = [self.__class__(root=x, expr=xpath, namespaces=self.namespaces) \
+            result = [self.__class__(root=x, expr=xpath, namespaces=self.namespaces, encoding=self.encoding) \
                 for x in result]
         else:
-            result = [self.__class__(root=result, expr=xpath, namespaces=self.namespaces)]
+            result = [self.__class__(root=result, expr=xpath, namespaces=self.namespaces, encoding=self.encoding)]
         return HtmlSelectorList(result)
 
     def re(self, regex):
-        htmlencoding = (self._root is not None and [self._root['encoding']] or [self.html['encoding']])[0]
-        result = extract_regex(regex, self.html['text'].encode(htmlencoding))
+        result = extract_regex(regex, self.html['text'].encode(self.encoding))
         if not self._root:
-            result = [self.__class__(html=x, root=self.html) \
+            result = [self.__class__(html=x, root=self.html, encoding=self.encoding) \
                 for x in result]
         return result
 
