@@ -76,7 +76,7 @@ def encoding(text):
             char['text'] = text.decode(char['encoding'])
             return char
     except:
-        return
+        pass
 
 def extract_regex(regex, text):
     """Extract a list of unicode strings from the given text/encoding using the following policies:
@@ -98,8 +98,6 @@ def extract_regex(regex, text):
     if isinstance(text, unicode):
         return [s for s in strings]
     else:
-        for s in strings:
-            print s
         return [encoding(s)['text'] for s in strings]
 
 def flatten(x):

@@ -24,7 +24,7 @@ class DummySpider:
         itemlist = hxs.re('<td class=\'td10\'>¡¤.*?<\/td>')
         for item in itemlist:
             title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')[0]
-            #print title.encode('gbk', 'backslashreplace')
+            print title.encode('gbk', 'backslashreplace')
 
         '''
         Usage xpath
