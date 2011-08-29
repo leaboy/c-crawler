@@ -116,3 +116,6 @@ def GetAttr(object, name=None, default=None):
                 return getattr(object, name)
     except Exception:
         logger.error('Spider not exist!')
+
+
+def Request():
