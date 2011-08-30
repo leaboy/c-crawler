@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from common import flatten, deprecated
 
 class HtmlSelectorList(list):

@@ -61,19 +61,16 @@ def logger(**kwargs):
     return logger
 
 def encoding(text):
-
     import chardet
-
     try:
         if text is None:
-            return {'text': 'None', 'confidence': 1.0, 'encoding': sys.getdefaultencoding()}
-
-        if isinstance(text, unicode):
-            return {'text': text, 'confidence': 1.0, 'encoding': sys.getdefaultencoding()}
-
-        elif isinstance(text, basestring):
+            return {'text': 'None', 'encoding': 'utf-8'}
+        elif isinstance(text, unicode):
+            return {'text': text, 'encoding': 'utf-8'}
+        elif isinstance(text, str):
             char = chardet.detect(text)
             char['text'] = text.decode(char['encoding'])
+            del char['confidence']
             return char
     except:
         pass
@@ -91,12 +88,7 @@ def extract_regex(regex, text):
     strings = regex.findall(text)    # full regex or numbered groups
     strings = flatten(strings)
 
-    for s in strings:
-        print encoding(s)['encoding']
-    return [encoding(s)['text'] for s in strings]
-
-    #print encoding
-    #return [s.decode(encoding) for s in strings]
+    return [s for s in strings]
 
 def flatten(x):
     """flatten(sequence) -> list

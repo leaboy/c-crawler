@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 '''
 Example of Usage
 '''
@@ -23,7 +23,7 @@ class DummySpider:
         Usage re
         '''
         '''
-        itemlist = hxs.re('<td class=\'td10\'>¡¤.*?<\/td>')
+        itemlist = hxs.re('<td class=\'td10\'> .*?<\/td>')
         for item in itemlist:
             title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
             print title
@@ -32,7 +32,7 @@ class DummySpider:
         for item in itemlist:
             title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
             if title:
-                print title[0].encode('gb2312', 'backslashreplace')
+                print title[0].encode('gbk', 'backslashreplace')
 #            print title.encode('gbk', 'backslashreplace')
 
         '''
@@ -43,8 +43,9 @@ class DummySpider:
         for item in itemlist:
             title = item.select('a/text()').extract()[0]
             #link = item.select('a/@href').extract()[0]
+            print type(title)
             #print Request(str(link), self.timeout).status
-            print item._root
+            #print item._root
             #print item.Link()
             #title.encode('gb2312', 'backslashreplace')
         '''

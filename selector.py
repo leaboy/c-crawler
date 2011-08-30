@@ -58,7 +58,7 @@ class HtmlSelector:
         return HtmlSelectorList(result)
 
     def re(self, regex):
-        result = extract_regex(regex, self.html['text'].encode(self.htmlencoding))
+        result = extract_regex(regex, self.html['text'])
         if not self._root:
             result = [self.__class__(html=x, root=self.html, htmlencoding=self.htmlencoding) \
                 for x in result]
