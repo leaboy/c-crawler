@@ -11,7 +11,7 @@ from common import deprecated_setter, encoding
 class Response:
     def __init__(self, url, status=200, headers=None, body='', request=None):
         self.headers = ''
-        self.status = int(status)
+        self.status = status
         self._set_body(body)
         self._set_url(url)
         self.request = request

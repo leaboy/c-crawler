@@ -22,8 +22,8 @@ logger = common.logger(name=__name__, filename='ccrawler.log', level=logging.DEB
 class CCrawler:
     def __init__(self, spider):
         self.spider = GetAttr(spider)
-        self.workers = GetAttr(self.spider, 'workers', 10)
-        self.timeout = GetAttr(self.spider, 'timeout', 120)
+        self.workers = GetAttr(self.spider, 'workers', 100)
+        self.timeout = GetAttr(self.spider, 'timeout', 60)
         self.start_urls = GetAttr(self.spider, 'start_urls', [])
 
         self.creq = queue.Queue()
@@ -47,28 +47,12 @@ class CCrawler:
             self.fetcher()
 
     def fetcher(self):
-        url, body, status, headers, response = self.creq.get(), None, 200, None, None
-        errormsg = '200'
-        request = urllib2.Request(url)
-        t = eventlet.Timeout(self.timeout, False)
-        try:
-            response = urllib2.urlopen(request)
-            body = response.read()
-        except urllib2.HTTPError, e:
-            status = errormsg = e.code
-        except urllib2.URLError, e:
-            errormsg = 'URLError: %s.' % e.args[0]
-        except eventlet.Timeout, e:
-            errormsg = 'Time out.'
-        except:
-            errormsg = 'URLError: Could not resolve.'
-        finally:
-            t.cancel()
-            response = Response(url, status, headers, body, request)
-            self.cres.put(response)
-            self.pool.spawn_n(self.parse_coroutine)
-            logger.info('Fetched: %s (%s)' % (url, errormsg))
-            self.task_done += 1
+        url = self.creq.get()
+        response = Request(url, self.timeout)
+        self.cres.put(response)
+        self.pool.spawn_n(self.parse_coroutine)
+        logger.info('Fetched: %s (%s)' % (url, response.status))
+        self.task_done += 1
 
     def start(self):
         logger.info("CCrawler start...")
@@ -118,4 +102,22 @@ def GetAttr(object, name=None, default=None):
         logger.error('Spider not exist!')
 
 
-def Request():
+def Request(url, timeout=60):
+    body, status, headers, response = None, '200', None, None
+    request = urllib2.Request(url)
+    t = eventlet.Timeout(timeout, False)
+    try:
+        response = urllib2.urlopen(request)
+        body = response.read()
+    except urllib2.HTTPError, e:
+        status = e.code
+    except urllib2.URLError, e:
+        status = 'URLError: %s.' % e.args[0]
+    except eventlet.Timeout, e:
+        status = 'Time out.'
+    except:
+        status = 'URLError: Could not resolve.'
+    finally:
+        t.cancel()
+        response = Response(url, status, headers, body, request)
+        return response

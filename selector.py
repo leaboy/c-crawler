@@ -64,6 +64,17 @@ class HtmlSelector:
                 for x in result]
         return result
 
+    def Link(self):
+        return self._root
+        parser = self._parser(encoding=self.htmlencoding, recover=True)
+        root = etree.fromstring(self.html['text'], parser=parser)
+        xpatheval = etree.XPathEvaluator(root)
+        try:
+            result = xpatheval('a/@href')
+            return etree.tostring(root, method='html', encoding=unicode)
+        except etree.XPathError:
+            pass
+
     def extract(self):
         try:
             return etree.tostring(self.root, method=self._tostring_method, \

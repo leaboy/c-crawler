@@ -81,24 +81,22 @@ def encoding(text):
 def extract_regex(regex, text):
     """Extract a list of unicode strings from the given text/encoding using the following policies:
 
-    * if the regex contains a named group called "extract" that will be returned
     * if the regex contains multiple numbered groups, all those will be returned (flattened)
     * if the regex doesn't contain any group the entire regex matching is returned
     """
 
     if isinstance(regex, basestring):
-        regex = re.compile(regex)
+        regex = re.compile(regex, re.S)
 
-    try:
-        strings = [regex.search(text).group('extract')]   # named group
-    except:
-        strings = regex.findall(text)    # full regex or numbered groups
+    strings = regex.findall(text)    # full regex or numbered groups
     strings = flatten(strings)
 
-    if isinstance(text, unicode):
-        return [s for s in strings]
-    else:
-        return [encoding(s)['text'] for s in strings]
+    for s in strings:
+        print encoding(s)['encoding']
+    return [encoding(s)['text'] for s in strings]
+
+    #print encoding
+    #return [s.decode(encoding) for s in strings]
 
 def flatten(x):
     """flatten(sequence) -> list

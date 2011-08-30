@@ -4,7 +4,7 @@ Example of Usage
 '''
 
 import common
-from ccrawler import CCrawler
+from ccrawler import CCrawler, Request
 from selector import HtmlSelector
 
 import logging
@@ -12,6 +12,7 @@ logger = common.logger(name=__name__, filename='ccrawler.log', level=logging.DEB
 
 class DummySpider:
     start_urls = ['http://www.blueidea.com/photo/gallery/']
+    #start_urls = ['http://disclosure.szse.cn/m/drgg000023.htm', 'http://disclosure.szse.cn/m/drgg000024.htm']
     #start_urls = ['http://www.baidu.com', 'http://www.google.com', 'http://www.google.hk']
     workers = 100
     timeout = 8
@@ -24,19 +25,29 @@ class DummySpider:
         '''
         itemlist = hxs.re('<td class=\'td10\'>¡¤.*?<\/td>')
         for item in itemlist:
-            title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')[0]
-            print title.encode('gbk', 'backslashreplace')
+            title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
+            print title
         '''
+        itemlist = hxs.re('<td nowrap>(.*?)<\/td>')
+        for item in itemlist:
+            title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
+            if title:
+                print title[0].encode('gb2312', 'backslashreplace')
+#            print title.encode('gbk', 'backslashreplace')
+
         '''
         Usage xpath
+        '''
         '''
         itemlist = hxs.select('//tr[@class!="listTitle"]/td[@nowrap]')
         for item in itemlist:
             title = item.select('a/text()').extract()[0]
-            link = item.select('a/@href')
-            print dir(link)
+            #link = item.select('a/@href').extract()[0]
+            #print Request(str(link), self.timeout).status
+            print item._root
+            #print item.Link()
             #title.encode('gb2312', 'backslashreplace')
-
+        '''
     def process_item(self, item):
         for i in item:
             print i
