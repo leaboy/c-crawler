@@ -28,29 +28,25 @@ class DummySpider:
             title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
             print title
         '''
-        '''
+        #'''
         itemlist = hxs.re('<tr class=\"(border|pagelight)\">.*?<td nowrap>(.*?)<\/td>')
         for item in itemlist:
             title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
             if title:
                 print title[0]
 #            #print title.encode('gbk', 'backslashreplace')
-        '''
+        #'''
 
         '''
         Usage xpath
         '''
-        #'''
+        '''
         itemlist = hxs.select('//tr[@class!="listTitle"]/td[@nowrap]')
         for item in itemlist:
-            title = item.select('a/text()').extract()[0]
-            #link = item.select('a/@href').extract()[0]
-            print title
-            #print Request(str(link), self.timeout).status
-            #print item._root
-            #print item.Link()
-            #title.encode('gb2312', 'backslashreplace')
-        #'''
+            title = item.select('a/text()').extract()
+            if title:
+                print title[0]
+        '''
     def process_item(self, item):
         for i in item:
             print i

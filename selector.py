@@ -18,11 +18,14 @@ class HtmlSelector:
     _tostring_method = 'html'
 
     def __init__(self, response=None, text=None, root=None, expr=None, namespaces=None):
-        if text:
-            self.response = Response(url='about:blank', \
-                body=unicode_to_str(text, 'utf-8'), encoding='utf-8')
-        else:
+        if response:
             self.response = response
+            self.utf8body = body_as_utf8(self.response)
+        elif text:
+            self.utf8body = unicode_to_str(text)
+        else:
+            self.utf8body = ''
+
         self._root = root
         self._xpathev = None
         self.namespaces = namespaces
@@ -32,7 +35,8 @@ class HtmlSelector:
     def root(self):
         if self._root is None:
             parser = self._parser(encoding=self.response.encoding, recover=True)
-            self._root = etree.fromstring(self.utf8body, parser=parser)
+            self._root = etree.fromstring(self.response.body, parser=parser, \
+                base_url=self.response.url)
         return self._root
 
     @property
