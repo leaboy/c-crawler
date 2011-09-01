@@ -7,7 +7,7 @@
 # GNU Free Documentation License 1.3
 
 from lxml import etree
-from response import Response
+from http import Response
 from common import extract_regex, body_as_utf8
 from python import unicode_to_str
 from list import HtmlSelectorList

@@ -13,8 +13,7 @@ from __future__ import with_statement
 import common, settings
 import eventlet
 from eventlet import queue
-from eventlet.green import urllib2, socket
-from response import Response
+from http import Request, Response
 
 import logging, traceback
 logger = common.logger(name=__name__, filename='ccrawler.log', level=logging.DEBUG)
@@ -100,24 +99,3 @@ def GetAttr(object, name=None, default=None):
                 return getattr(object, name)
     except Exception:
         logger.error('Spider not exist!')
-
-
-def Request(url, timeout=60, data=None, headers=settings.DEFAULT_REQUEST_HEADERS):
-    body, status, response = None, '200', None
-    request = urllib2.Request(url, data=data, headers=headers)
-    t = eventlet.Timeout(timeout, False)
-    try:
-        response = urllib2.urlopen(request)
-        body = response.read()
-    except urllib2.HTTPError, e:
-        status = e.code
-    except urllib2.URLError, e:
-        status = 'URLError: %s.' % e.args[0]
-    except eventlet.Timeout, e:
-        status = 'Time out.'
-    except:
-        status = 'URLError: Could not resolve.'
-    finally:
-        t.cancel()
-        response = Response(url, status, headers, body, request)
-        return response
