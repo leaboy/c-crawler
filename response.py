@@ -8,13 +8,15 @@
 
 import codecs, settings
 from common import deprecated_setter, UnicodeDammit, resolve_encoding
+from headers import Headers
+
 
 class Response:
 
     _DEFAULT_ENCODING = settings.DEFAULT_RESPONSE_ENCODING
 
     def __init__(self, url, status=200, headers=None, body='', request=None):
-        self.headers = ''
+        self.headers = Headers(headers or {})
         self.status = status
         self._set_body(body)
         self._set_url(url)

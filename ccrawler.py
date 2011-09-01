@@ -10,10 +10,10 @@
 
 from __future__ import with_statement
 
-import common
+import common, settings
 import eventlet
 from eventlet import queue
-from eventlet.green import urllib2
+from eventlet.green import urllib2, socket
 from response import Response
 
 import logging, traceback
@@ -102,9 +102,9 @@ def GetAttr(object, name=None, default=None):
         logger.error('Spider not exist!')
 
 
-def Request(url, timeout=60):
-    body, status, headers, response = None, '200', None, None
-    request = urllib2.Request(url)
+def Request(url, timeout=60, data=None, headers=settings.DEFAULT_REQUEST_HEADERS):
+    body, status, response = None, '200', None
+    request = urllib2.Request(url, data=data, headers=headers)
     t = eventlet.Timeout(timeout, False)
     try:
         response = urllib2.urlopen(request)

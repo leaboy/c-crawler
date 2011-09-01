@@ -33,7 +33,7 @@ class DummySpider:
         for item in itemlist:
             title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
             if title:
-                print title[0]
+                print title[0].encode('gbk', 'backslashreplace')
 #            #print title.encode('gbk', 'backslashreplace')
         #'''
 
