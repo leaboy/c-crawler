@@ -26,6 +26,7 @@ class HtmlSelector:
         else:
             self.utf8body = ''
 
+        self._text = text
         self._root = root
         self._xpathev = None
         self.namespaces = namespaces
@@ -60,13 +61,16 @@ class HtmlSelector:
 
     def re(self, regex):
         result = extract_regex(regex, self.utf8body)
-        if not self._root:
+        #if not self._root:
+        if hasattr(result, '__iter__'):
             result = [self.__class__(text=x, root=self.utf8body) \
                 for x in result]
-        return result
-    '''
+        else:
+            result = [self.__class__(text=result, root=self.utf8body)]
+        return HtmlSelectorList(result)
+
     def Link(self):
-        return self._root
+        '''
         parser = self._parser(encoding=self.htmlencoding, recover=True)
         root = etree.fromstring(self.html['text'], parser=parser)
         xpatheval = etree.XPathEvaluator(root)
@@ -75,10 +79,14 @@ class HtmlSelector:
             return etree.tostring(root, method='html', encoding=unicode)
         except etree.XPathError:
             pass
-    '''
+        '''
+
     def extract(self):
-        try:
-            return etree.tostring(self.root, method=self._tostring_method, \
-                encoding=unicode)
-        except (AttributeError, TypeError):
-            return unicode(self.root)
+        if isinstance(self._root, etree._ElementUnicodeResult):
+            try:
+                return etree.tostring(self.root, method=self._tostring_method, \
+                    encoding=unicode)
+            except (AttributeError, TypeError):
+                return unicode(self.root)
+        elif isinstance(self._root, basestring):
+            return self._text

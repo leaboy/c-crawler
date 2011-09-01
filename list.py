@@ -14,9 +14,8 @@ class HtmlSelectorList(list):
     def extract(self):
         return [x.extract() for x in self]
 
-    def re(self, regex):
-        return flatten([x.re(regex) for x in self])
+    def Link(self):
+        return [x.Link() for x in self]
 
-    @deprecated(use_instead='HtmlSelector.select')
-    def x(self, xpath):
-        return self.select(xpath)
+    def re(self, regex):
+        return self.__class__(flatten([x.re(regex) for x in self]))

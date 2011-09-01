@@ -31,9 +31,10 @@ class DummySpider:
         #'''
         itemlist = hxs.re('<tr class=\"(border|pagelight)\">.*?<td nowrap>(.*?)<\/td>')
         for item in itemlist:
-            title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>')
+            title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>').extract()
             if title:
-                print title[0].encode('gbk', 'backslashreplace')
+                #print title[0].encode('gbk', 'backslashreplace')
+                print title
 #            #print title.encode('gbk', 'backslashreplace')
         #'''
 
@@ -45,7 +46,7 @@ class DummySpider:
         for item in itemlist:
             title = item.select('a/text()').extract()
             if title:
-                print title[0]
+                print title
         '''
     def process_item(self, item):
         for i in item:
