@@ -6,18 +6,23 @@
 #
 # GNU Free Documentation License 1.3
 
+import urlparse
+import eventlet
 from lxml import etree
-from http import Response
-from common import extract_regex, body_as_utf8
+from http import Request
 from python import unicode_to_str
 from list import HtmlSelectorList
+from common import extract_regex, body_as_utf8, logger
+
+import logging
+logger = logger(name=__name__, filename='ccrawler.log', level=logging.DEBUG)
 
 class HtmlSelector:
-    __slots__ = ['html', 'text', 'expr', 'namespaces', '_root', '_xpathev']
+    __slots__ = ['_text', '_root', '_xpathev', 'expr', 'namespaces', 'base_url']
     _parser = etree.HTMLParser
     _tostring_method = 'html'
 
-    def __init__(self, response=None, text=None, root=None, expr=None, namespaces=None):
+    def __init__(self, response=None, text=None, root=None, expr=None, namespaces=None, base_url=None):
         if response:
             self.response = response
             self.utf8body = body_as_utf8(self.response)
@@ -25,6 +30,11 @@ class HtmlSelector:
             self.utf8body = unicode_to_str(text)
         else:
             self.utf8body = ''
+
+        if not base_url and response:
+            self.base_url = response.url
+        else:
+            self.base_url = base_url
 
         self._text = text
         self._root = root
@@ -53,33 +63,30 @@ class HtmlSelector:
             raise ValueError("Invalid XPath: %s" % xpath)
 
         if hasattr(result, '__iter__'):
-            result = [self.__class__(root=x, expr=xpath, namespaces=self.namespaces) \
+            result = [self.__class__(root=x, expr=xpath, namespaces=self.namespaces, base_url=self.base_url) \
                 for x in result]
         else:
-            result = [self.__class__(root=result, expr=xpath, namespaces=self.namespaces)]
+            result = [self.__class__(root=result, expr=xpath, namespaces=self.namespaces, base_url=self.base_url)]
         return HtmlSelectorList(result)
 
     def re(self, regex):
         result = extract_regex(regex, self.utf8body)
-        #if not self._root:
         if hasattr(result, '__iter__'):
-            result = [self.__class__(text=x, root=self.utf8body) \
+            result = [self.__class__(text=x, root=self.utf8body, base_url=self.base_url) \
                 for x in result]
         else:
-            result = [self.__class__(text=result, root=self.utf8body)]
+            result = [self.__class__(text=result, root=self.utf8body, base_url=self.base_url)]
         return HtmlSelectorList(result)
 
     def Link(self):
-        '''
-        parser = self._parser(encoding=self.htmlencoding, recover=True)
-        root = etree.fromstring(self.html['text'], parser=parser)
-        xpatheval = etree.XPathEvaluator(root)
+        result = self.extract()
         try:
-            result = xpatheval('a/@href')
-            return etree.tostring(root, method='html', encoding=unicode)
-        except etree.XPathError:
+            url = urlparse.urljoin(self.base_url, result)
+            response = Request(unicode_to_str(url), timeout=8)
+            logger.info('Fetched: %s (%s)' % (url, response.status))
+            return self.__class__(response)
+        except:
             pass
-        '''
 
     def extract(self):
         if isinstance(self._root, etree._ElementUnicodeResult):

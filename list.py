@@ -1,4 +1,5 @@
 
+import eventlet
 from common import deprecated
 from python import flatten
 
@@ -14,8 +15,12 @@ class HtmlSelectorList(list):
     def extract(self):
         return [x.extract() for x in self]
 
+    def mapcls(self, cls):
+        return cls.Link()
+
     def Link(self):
-        return [x.Link() for x in self]
+        pool = eventlet.GreenPool()
+        return [result for result in pool.imap(self.mapcls, self)]
 
     def re(self, regex):
         return self.__class__(flatten([x.re(regex) for x in self]))

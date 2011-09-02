@@ -30,12 +30,25 @@ class DummySpider:
         '''
         #'''
         itemlist = hxs.re('<tr class=\"(border|pagelight)\">.*?<td nowrap>(.*?)<\/td>')
+        linkitem = itemlist.re('<a[^>]*href=\"([^\s\"]+)\"[^>]*>[^<]*<\/a>').Link()
+        for item in linkitem:
+            title = item.re('<td class="content"><strong>(.*?)</strong></td>').extract()
+            print title
+        '''
+        for item in linkitem:
+            print item
+        '''
+        #print type(linkitem)
+        #.Link()
+        #print linkitem
+
+        '''
         for item in itemlist:
-            title = item.re('<a[^>]*[^>]*>(.*)[^<]*<\/a>').extract()
-            if title:
-                #print title[0].encode('gbk', 'backslashreplace')
-                print title
-#            #print title.encode('gbk', 'backslashreplace')
+            title = item.re('<a[^>]*>(.*)[^<]*<\/a>').extract()
+            link = item.re('<a[^>]*href=\"([^\s\"]+)\"[^>]*>[^<]*<\/a>').Link()
+            if link:
+                print link[0].base_url
+        '''
         #'''
 
         '''
