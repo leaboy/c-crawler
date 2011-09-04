@@ -5,7 +5,7 @@ This module contains the default values for all settings.
 
 DEFAULT_REQUEST_HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en',
+    'Accept-Language': 'zh-CN,zh;q=0.8',
 }
 
 DEFAULT_RESPONSE_ENCODING = 'ascii'

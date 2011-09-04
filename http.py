@@ -6,10 +6,12 @@
 #
 # GNU Free Documentation License 1.3
 
-import codecs, settings
+from urlparse import urlparse
+
+import httplib, httplib2
+import codecs, settings, eventlet
 from common import deprecated_setter, UnicodeDammit, resolve_encoding
 from headers import Headers
-import eventlet
 from eventlet.green import urllib2
 
 
@@ -30,9 +32,39 @@ def Request(url, timeout=60, data=None, headers=settings.DEFAULT_REQUEST_HEADERS
         status = 'URLError: Could not resolve.'
     finally:
         t.cancel()
-        response = Response(url, status, headers, body, request)
+        #response = Response(url, status, headers, body, request)
         return response
 
+
+def Request2(url, timeout=60, method='GET', data=None, headers=settings.DEFAULT_REQUEST_HEADERS):
+    body, status, response = None, '200', None
+    ht = httplib2.Http(".cache")
+    t = eventlet.Timeout(timeout, False)
+    try:
+        response, content = ht.request(url, headers=headers)
+    except:
+        status = 'URLError: Could not resolve.'
+    finally:
+        t.cancel()
+        return response
+
+def Request3(url, timeout=60, method='GET', data=None, headers=settings.DEFAULT_REQUEST_HEADERS):
+    body, status, response = None, '200', None
+    t = eventlet.Timeout(timeout, False)
+    try:
+        urls = urlparse(url)
+        http = httplib.HTTPConnection(urls[1])
+        http.request(method=method, url=url, headers=headers)
+        response = http.getresponse()
+        body = response.read()
+        http.close()
+    except:
+        status = 'URLError: Could not resolve.'
+    finally:
+        t.cancel()
+        return response
+
+print Request3('http://www.blueidea.com/photo/gallery/')
 
 class Response:
 
