@@ -37,13 +37,13 @@ class DummySpider:
             print title
         '''
 
-        #'''
+        '''
         itemlist = hxs.re('<tr class=\"(border|pagelight)\">.*?<td nowrap>(.*?)<\/td>')
         for item in itemlist:
             title = item.re('<a[^>]*>(.*)[^<]*<\/a>').extract()
             if title:
                 print title
-        #'''
+        '''
 
         '''
         Usage xpath
@@ -55,6 +55,16 @@ class DummySpider:
             if title:
                 print title
         '''
+        #'''
+        itemlist = hxs.select('//table[@class="border"]/tr[@class!="listTitle"]/td[@nowrap]')
+        linkitem = itemlist.select('a/@href').Link()
+        for item in linkitem:
+            title = item.select('//td[@class="content"]/strong/text()').extract()
+            #message = item.select('//table[@class="pageLighter"]/tr/td').extract()
+            #if title:
+            #    print title
+        #'''
+
     def process_item(self, item):
         for i in item:
             print i

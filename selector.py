@@ -80,16 +80,17 @@ class HtmlSelector:
 
     def Link(self):
         result = self.extract()
-        try:
-            url = urlparse.urljoin(self.base_url, result)
-            response = Request(unicode_to_str(url), timeout=8)
-            logger.info('Fetched: %s (%s)' % (url, response.status))
-            return self.__class__(response)
-        except:
-            pass
+        if result:
+            try:
+                url = urlparse.urljoin(self.base_url, result)
+                response = Request(unicode_to_str(url), timeout=8)
+                logger.info('Fetched: %s (%s)' % (url, response.status))
+                return self.__class__(response)
+            except:
+                pass
 
     def extract(self):
-        if isinstance(self._root, etree._ElementUnicodeResult):
+        if isinstance(self._root, etree._ElementUnicodeResult) or isinstance(self._root, etree._ElementStringResult) or isinstance(self._root, etree._Element):
             try:
                 return etree.tostring(self.root, method=self._tostring_method, \
                     encoding=unicode)
