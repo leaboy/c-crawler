@@ -55,14 +55,16 @@ class DummySpider:
             if title:
                 print title
         '''
+
         #'''
         itemlist = hxs.select('//table[@class="border"]/tr[@class!="listTitle"]/td[@nowrap]')
         linkitem = itemlist.select('a/@href').Link()
         for item in linkitem:
             title = item.select('//td[@class="content"]/strong/text()').extract()
             #message = item.select('//table[@class="pageLighter"]/tr/td').extract()
-            #if title:
-            #    print title
+            if title:
+                print title[0]
+                #print title[0].encode('gb2312', 'backslashreplace')
         #'''
 
     def process_item(self, item):

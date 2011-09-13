@@ -6,8 +6,8 @@
 #
 # GNU Free Documentation License 1.3
 
-import codecs, settings, eventlet
-from common import deprecated_setter, UnicodeDammit, resolve_encoding
+import re, codecs, settings, eventlet
+from common import deprecated_setter, UnicodeDammit, encoding_exists, resolve_encoding
 from headers import Headers
 from eventlet.green import urllib2
 
@@ -36,7 +36,17 @@ def Request(url, timeout=60, data=None, headers=settings.DEFAULT_REQUEST_HEADERS
 
 class Response:
 
+    _template = r'''%s\s*=\s*["']?\s*%s\s*["']?'''
+
+    _httpequiv_re = _template % ('http-equiv', 'Content-Type')
+    _content_re   = _template % ('content', r'(?P<mime>[^;]+);\s*charset=(?P<charset>[\w-]+)')
+    _encoding_re  = _template % ('encoding', r'(?P<charset>[\w-]+)')
+
+    METATAG_RE  = re.compile(r'<meta\s+%s\s+%s' % (_httpequiv_re, _content_re), re.I)
+    METATAG_RE2 = re.compile(r'<meta\s+%s\s+%s' % (_content_re, _httpequiv_re), re.I)
+
     _DEFAULT_ENCODING = settings.DEFAULT_RESPONSE_ENCODING
+    _ENCODING_RE = re.compile(r'charset=([\w-]+)', re.I)
 
     def __init__(self, url, status=200, headers=None, body='', request=None):
         self.headers = Headers(headers or {})
@@ -79,13 +89,22 @@ class Response:
         return self._get_encoding(infer=True)
 
     def _get_encoding(self, infer=False):
-        if infer:
-            enc = self._body_inferred_encoding()
-        else:
+        enc = self._declared_encoding()
+        if enc and not encoding_exists(enc):
             enc = None
+        if not enc and infer:
+            enc = self._body_inferred_encoding()
         if not enc:
             enc = self._DEFAULT_ENCODING
         return resolve_encoding(enc)
+
+    def _declared_encoding(self):
+        return self._body_declared_encoding()
+
+    def _body_declared_encoding(self):
+        chunk = self.body[:5000]
+        match = self.METATAG_RE.search(chunk) or self.METATAG_RE2.search(chunk)
+        return match.group('charset') if match else None
 
     def _body_inferred_encoding(self):
         enc = self._get_encoding()
