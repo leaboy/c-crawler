@@ -15,7 +15,6 @@ from eventlet.green import urllib2
 def Request(url, req_timeout=60, req_data=None, req_headers=settings.DEFAULT_REQUEST_HEADERS):
     body, status, response = 'None', '200', None
     request = urllib2.Request(url, req_data, req_headers)
-    #t = eventlet.Timeout(req_timeout, False)
     try:
         response = urllib2.urlopen(request)
         body = response.read()
@@ -29,80 +28,8 @@ def Request(url, req_timeout=60, req_data=None, req_headers=settings.DEFAULT_REQ
     except:
         status = 'URLError: Could not resolve.'
     finally:
-        #t.cancel()
-        response = Response(url, status, req_headers, body, request)
-        return response
+        return Response(url, status, req_headers, body, request)
 
-import pycurl, StringIO
-DEFAULT_REQUEST_HEADERS = [
-    'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language: zh-CN,zh;q=0.8',
-]
-class Request2:
-    def __init__(self):
-        self.httpheader = DEFAULT_REQUEST_HEADERS
-        self.referer = ''
-        self.connnecttimeout = 60
-        self.timeout = 300
-        self.backheader = 0
-        self.cookesfile = "./cookes"
-        self.proxyuse = False
-        self.proxyip = []
-        self.proxynodomain = ['localhost','127.0.0.1']
-
-    def __del__(self):
-        pass
-
-    def fetch(self, url, stream=StringIO.StringIO(), post={}):
-        '''
-        --url
-        --stream [stream] StringIO or fp
-        --post [dict] {'username':'hzq','password':'blog'}'''
-        curl = pycurl.Curl()
-        curl.setopt(pycurl.CONNECTTIMEOUT, self.connnecttimeout)
-        curl.setopt(pycurl.TIMEOUT, self.timeout)
-        curl.setopt(pycurl.HTTPHEADER, self.httpheader)
-        curl.setopt(pycurl.HEADER, self.backheader)
-        curl.setopt(pycurl.FOLLOWLOCATION, 1)
-        curl.setopt(pycurl.MAXREDIRS, 5)
-        if self.referer == '':
-            curl.setopt(pycurl.AUTOREFERER, 1)
-        else:
-            curl.setopt(pycurl.REFERER, self.referer)
-        curl.setopt(pycurl.COOKIEJAR, self.cookesfile)
-        curl.setopt(pycurl.COOKIEFILE, self.cookesfile)
-        curl.setopt(pycurl.WRITEFUNCTION, stream.write)
-        curl.setopt(pycurl.URL, url)
-        if self.proxyuse:
-            proxyip = self.proxyip[random.randint(0, len(self.proxyip)-1)];
-            curl.setopt(pycurl.PROXY, proxyip)
-        if len(post)>0 :
-            curl.setopt(pycurl.POSTFIELDS, post)
-
-        curl.perform()
-        status = curl.getinfo(pycurl.RESPONSE_CODE)
-        '''
-        status = ''
-        try:
-            curl.perform()
-            status = curl.getinfo(pycurl.RESPONSE_CODE)
-        except:
-            status = curl.errstr()
-        finally:
-            curl.close()
-            status = str(status);
-            return status;
-        '''
-    def html(self, url, post={}):
-        io = StringIO.StringIO()
-        reval = self.fetch(url, io, post)
-        if reval == '200':
-            reval = io.getvalue()
-        io.close()
-        return reval
-
-req = Request2()
-req.fetch('fdsfsdfsdf')
 
 class Response:
 
