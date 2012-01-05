@@ -9,7 +9,7 @@
 import sys, re, warnings
 from functools import wraps
 from python import flatten
-from markup import remove_entities
+from markup import remove_entities, replace_escape_chars
 
 import codecs
 from settings import ENCODING_ALIASES_BASE, ENCODING_ALIASES
@@ -46,7 +46,7 @@ def logger(**kwargs):
         'name': 'root',
         'level': logging.NOTSET, # DEBUG, INFO, WARNING, ERROR, CRITICAL
         'format': '%(asctime)s [%(name)s] - %(levelname)s %(message)s',
-        'filename': 'root.log',
+        'filename': '',
         'filemode': 'a', }
 
     options.update(kwargs)
@@ -54,8 +54,14 @@ def logger(**kwargs):
     name = options['name']
     logger = logging.getLogger(name)
 
+    filepath = os.path.join('log', time.strftime('%Y-%m'))
+    if not os.path.isdir(filepath):
+        os.makedirs(filepath)
+    file_name = options['filename'] and options['filename'] or time.strftime('%Y-%m-%d')
+    file_name = os.path.join(filepath, file_name)
+
     Formatter = logging.Formatter(options['format'])
-    logHandler = logging.FileHandler(options['filename'], options['filemode'])
+    logHandler = logging.FileHandler(file_name, options['filemode'])
     logHandler.setFormatter(Formatter)
     logger.addHandler(logHandler)
 
@@ -76,6 +82,7 @@ def body_as_unicode(response):
     return response.body.decode(response.encoding, 'scrapy_replace')
 
 def body_as_utf8(response):
+    response.body = replace_escape_chars(response.body)
     if response.encoding in utf8_encodings:
         return response.body
     else:
